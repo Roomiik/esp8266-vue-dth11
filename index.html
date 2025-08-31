@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8" />
+  <title>Моніторинг DHT11</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="preconnect" href="https://unpkg.com" />
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 20px; color: #1f2937; }
+    .wrap { max-width: 900px; margin: 0 auto; }
+    .header { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin: 16px 0; }
+    .card { border: 1px solid #e5e7eb; border-radius: 10px; padding: 14px; background: #fff; }
+    .metric { font-size: 32px; font-weight: 600; }
+    .muted { color: #6b7280; font-size: 14px; }
+    .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    button { padding: 8px 12px; border-radius: 8px; border: 1px solid #d1d5db; background: #f9fafb; cursor: pointer; }
+    button:hover { background: #f3f4f6; }
+    canvas { background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 10px; }
+    .status-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+    .ok { background: #10b981; }
+    .warn { background: #f59e0b; }
+    .err { background: #ef4444; }
+  </style>
+</head>
+<body>
+  <div id="app" class="wrap">
+    <div class="header">
+      <h1>Моніторинг DHT11</h1>
+      <div class="row">
+        <span :class="['status-dot', statusClass]"></span>
+        <span class="muted">{{ statusText }}</span>
+        <button @click="manualRefresh">Оновити зараз</button>
+      </div>
+    </div>
+
+    <div class="cards">
+      <div class="card">
+        <div class="muted">Температура</div>
+        <div class="metric">{{ latest.temperature ?? '---' }} °C</div>
+      </div>
+      <div class="card">
+        <div class="muted">Вологість</div>
+        <div class="metric">{{ latest.humidity ?? '---' }} %</div>
+      </div>
+      <div class="card">
+        <div class="muted">Останнє оновлення</div>
+        <div>{{ lastUpdateText }}</div>
+      </div>
+      <div class="card">
+        <div class="muted">Інтервал опитування</div>
+        <div class="row">
+          <button @click="setIntervalMs(2000)">2s</button>
+          <button @click="setIntervalMs(5000)">5s</button>
+          <button @click="setIntervalMs(10000)">10s</button>
+          <span class="muted">Поточний: {{ pollMs }} ms</span>
+        </div>
+      </div>
+    </div>
+
+    <h3>Графік температури та вологості</h3>
+    <canvas id="chart" height="120"></canvas>
+  </div>
+
+  <!-- Vue 3 -->
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <!-- App logic -->
+  <script type="module" src="/main.js"></script>
+</body>
+</html>
