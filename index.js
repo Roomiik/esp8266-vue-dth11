@@ -11,6 +11,10 @@ app.use(cors({
   origin: 'http://127.0.0.1:5500' // або твій фронтенд IP/порт
 }));
 
+app.get('/', function(req, res) {
+  res.sendFile(path.join(__dirname, '/index.html'));
+});
+
 // Дані в пам'яті
 let latestData = { temperature: null, humidity: null, ts: null };
 const history = []; // [{ temperature, humidity, ts }]
@@ -56,3 +60,4 @@ app.listen(PORT, () => {
   console.log(`🔌 Сервер запущено на http://localhost:${PORT}`);
   console.log(`   Відкрий фронтенд: http://<IP_комп'ютера>:${PORT}/`);
 });
+
