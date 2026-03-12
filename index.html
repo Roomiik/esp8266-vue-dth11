@@ -157,7 +157,7 @@ async function fetchHistory(){
 
 try{
 
-const res = await fetch('http://esp8266-dht11.onrender.com/api/history?limit=300',{cache:'no-store'})
+const res = await fetch('https://esp8266-dht11.onrender.com/api/history?limit=300',{cache:'no-store'})
 
 if(!res.ok) throw new Error()
 
@@ -300,4 +300,5 @@ setIntervalMs
 
 </body>
 </html>
+
 
