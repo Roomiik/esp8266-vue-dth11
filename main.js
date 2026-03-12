@@ -38,7 +38,7 @@ createApp({
 
     async function fetchLatest() {
       try {
-        const res = await fetch('http://192.168.1.103:3000/api/latest', { cache: 'no-store' })
+        const res = await fetch('https://esp8266-dht11.onrender.com/api/latest', { cache: 'no-store' })
         if (!res.ok) throw new Error('Bad status');
         const data = await res.json();
         latest.value = data;
@@ -51,7 +51,7 @@ createApp({
 
     async function fetchHistory() {
       try {
-        const res = await fetch('http://192.168.1.103:3000/api/history?limit=300', { cache: 'no-store' });
+        const res = await fetch('https://esp8266-dht11.onrender.com/api/history?limit=300', { cache: 'no-store' });
         if (!res.ok) throw new Error('Bad status');
         const data = await res.json();
         history.value = Array.isArray(data) ? data : [];
@@ -157,3 +157,4 @@ createApp({
     };
   }
 }).mount('#app');
+
