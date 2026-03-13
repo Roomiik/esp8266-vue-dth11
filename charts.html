@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<title>Sensor Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+
+body{
+margin:0;
+font-family:system-ui;
+background:#0b1220;
+color:white;
+}
+
+.wrap{
+max-width:1400px;
+margin:auto;
+padding:20px;
+}
+
+.header{
+display:flex;
+justify-content:space-between;
+align-items:center;
+margin-bottom:20px;
+}
+
+.header h1{
+font-size:22px;
+margin:0;
+}
+
+.refresh{
+background:#2563eb;
+border:none;
+padding:8px 14px;
+border-radius:8px;
+color:white;
+cursor:pointer;
+}
+
+.grid{
+display:grid;
+gap:20px;
+}
+
+@media(min-width:900px){
+.grid{
+grid-template-columns:1fr 1fr 1fr;
+}
+}
+
+@media(max-width:899px){
+.grid{
+grid-template-columns:1fr;
+}
+}
+
+.card{
+
+background:rgba(255,255,255,0.05);
+backdrop-filter:blur(10px);
+
+border-radius:16px;
+padding:18px;
+
+box-shadow:
+0 10px 30px rgba(0,0,0,0.5);
+
+transition:0.2s;
+}
+
+.card:hover{
+transform:translateY(-3px);
+}
+
+.metric{
+font-size:34px;
+font-weight:600;
+margin-top:5px;
+}
+
+.label{
+color:#94a3b8;
+font-size:14px;
+}
+
+canvas{
+width:100%!important;
+height:260px!important;
+margin-top:10px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div id="app" class="wrap">
+
+<div class="header">
+<h1>⚡ Sensor Energy Dashboard</h1>
+<button class="refresh" @click="loadData">Refresh</button>
+</div>
+
+<div class="grid">
+
+<div class="card">
+<div class="label">Температура</div>
+<div class="metric">{{latest.temperature ?? '--'}} °C</div>
+<canvas id="tempChart"></canvas>
+</div>
+
+<div class="card">
+<div class="label">Вологість</div>
+<div class="metric">{{latest.humidity ?? '--'}} %</div>
+<canvas id="humChart"></canvas>
+</div>
+
+<div class="card">
+<div class="label">Тиск</div>
+<div class="metric">{{latest.HPA ?? '--'}} hPa</div>
+<canvas id="pressChart"></canvas>
+</div>
+
+</div>
+
+</div>
+
+<script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<script>
+
+const { createApp } = Vue
+
+// графіки НЕ reactive
+let tempChart = null
+let humChart = null
+let pressChart = null
+
+createApp({
+
+data(){
+return{
+latest:{
+temperature:null,
+humidity:null,
+HPA:null
+}
+}
+},
+
+methods:{
+
+async loadData(){
+
+const res = await fetch("https://esp8266-dht11.onrender.com/api/history?limit=300")
+const data = await res.json()
+
+if(!data.length) return
+
+this.latest = data[data.length-1]
+
+const labels = data.map(d => new Date(d.ts).toLocaleTimeString())
+const temp = data.map(d => d.temperature)
+const hum = data.map(d => d.humidity)
+const press = data.map(d => d.HPA)
+
+this.updateCharts(labels,temp,hum,press)
+
+},
+
+initCharts(){
+
+const tempCanvas = document.getElementById("tempChart")
+const humCanvas = document.getElementById("humChart")
+const pressCanvas = document.getElementById("pressChart")
+
+if(!tempCanvas || !humCanvas || !pressCanvas) return
+
+tempChart = new Chart(tempCanvas.getContext("2d"),{
+type:"line",
+data:{labels:[],datasets:[{data:[],borderColor:"#ef4444",tension:0.4,pointRadius:0}]},
+options:{responsive:true,maintainAspectRatio:false,plugins:{legend:false}}
+})
+
+humChart = new Chart(humCanvas.getContext("2d"),{
+type:"line",
+data:{labels:[],datasets:[{data:[],borderColor:"#22c55e",tension:0.4,pointRadius:0}]},
+options:{responsive:true,maintainAspectRatio:false,plugins:{legend:false}}
+})
+
+pressChart = new Chart(pressCanvas.getContext("2d"),{
+type:"line",
+data:{labels:[],datasets:[{data:[],borderColor:"#3b82f6",tension:0.4,pointRadius:0}]},
+options:{responsive:true,maintainAspectRatio:false,plugins:{legend:false}}
+})
+
+},
+
+updateCharts(labels,temp,hum,press){
+
+if(!tempChart) return
+
+tempChart.data.labels = labels
+tempChart.data.datasets[0].data = temp
+tempChart.update()
+
+humChart.data.labels = labels
+humChart.data.datasets[0].data = hum
+humChart.update()
+
+pressChart.data.labels = labels
+pressChart.data.datasets[0].data = press
+pressChart.update()
+
+}
+
+},
+
+mounted(){
+
+setTimeout(()=>{
+
+this.initCharts()
+this.loadData()
+
+setInterval(()=>{
+this.loadData()
+},5000)
+
+},100)
+
+}
+
+}).mount("#app")
+
+</script>
+
+</body>
+</html>
